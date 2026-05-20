@@ -67,7 +67,7 @@ const App = {
 
     /* Feedback */
     const fb = document.getElementById('feedback');
-    fb.textContent = `Bravo ! La lettre "${letter}" est révélée ✨`;
+    fb.textContent = `Bravo ! Le chiffre "${letter}" est révélé ✨`;
     fb.className = 'feedback success';
 
     /* Bouton suivant avec un léger délai */

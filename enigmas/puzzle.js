@@ -65,7 +65,7 @@ class PuzzleEnigma extends BaseEnigma {
         <div class="puzzle-grid" id="puzzle-grid"
              style="grid-template-columns:repeat(${cols},${this._pieceW}px); width:${gW}px;">
         </div>
-        <p class="puzzle-hint">Cliquez une pièce pour la sélectionner, puis une autre pour les échanger.</p>
+        <p class="puzzle-hint">Cliquez sur une pièce pour la sélectionner, puis une autre pour les échanger.</p>
       </div>
     `;
 

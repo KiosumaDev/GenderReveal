@@ -44,7 +44,7 @@ const ENIGMA_CONFIG = [
     image: 'assets/puzzle.png',
     cols: 5,
     rows: 5,
-    clue: 'Reconstituez l\'image pour découvrir la troisième lettre.',
+    clue: 'Reconstituez l\'image pour découvrir le premier chiffre.',
   },
 
   /* ════════════════════════════════════════════════════════
