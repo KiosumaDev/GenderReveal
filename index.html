@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✨ Gender Reveal — Le Grand Mystère</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Canvas global des étoiles — visible sur tous les écrans -->
+  <canvas id="stars-canvas"></canvas>
+
+  <!-- ══════════════════════════════════════════
+       ÉCRAN 1 — ACCUEIL
+  ══════════════════════════════════════════ -->
+  <div id="screen-welcome" class="screen active">
+    <div class="welcome-content">
+      <p class="title-sparkle">✨ Gender Reveal ✨</p>
+      <h1 class="title-main">Le Grand Mystère</h1>
+      <p class="subtitle">
+        4 énigmes vous attendent...<br>
+        Résolvez-les toutes pour découvrir notre secret !
+      </p>
+      <button class="btn-primary" onclick="App.start()">Commencer l'aventure</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       ÉCRAN 2 — ÉNIGME
+  ══════════════════════════════════════════ -->
+  <div id="screen-riddle" class="screen">
+    <div class="riddle-wrapper">
+
+      <!-- En-tête progression -->
+      <div class="riddle-header">
+        <div class="progress-text">Énigme <span id="riddle-number">1</span> / <span id="riddle-total">4</span></div>
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Cases des lettres -->
+      <div class="letter-slots" id="letter-slots"></div>
+
+      <!-- Zone de rendu de l'énigme (chaque mini-jeu s'injecte ici) -->
+      <div id="enigma-container" class="enigma-container"></div>
+
+      <!-- Feedback après résolution -->
+      <div id="feedback" class="feedback hidden"></div>
+
+      <!-- Bouton énigme suivante -->
+      <button id="btn-next" class="btn-primary hidden" onclick="App.nextRiddle()">
+        Énigme suivante →
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       ÉCRAN 3 — TOUTES LES LETTRES TROUVÉES
+  ══════════════════════════════════════════ -->
+  <div id="screen-final" class="screen">
+    <div class="final-content">
+      <p class="final-label">Le code est :</p>
+      <div class="letter-slots" id="final-letter-slots"></div>
+      <h2>Vous avez résolu toutes les énigmes !</h2>
+      <p>Êtes-vous prêts à découvrir notre secret ?</p>
+      <button class="btn-primary btn-large" onclick="App.reveal()">
+        💫 Révéler le Secret !
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       ÉCRAN 4 — RÉVÉLATION FINALE
+       (uniquement l'image du personnage + fond palette)
+  ══════════════════════════════════════════ -->
+  <div id="screen-reveal" class="screen">
+    <canvas id="confetti-canvas"></canvas>
+    <div class="reveal-content">
+      <img id="reveal-character" class="reveal-character" src="" alt="">
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCRIPTS — ordre important
+  ══════════════════════════════════════════ -->
+  <script src="enigma-engine.js"></script>    <!-- BaseEnigma + EnigmaRegistry -->
+  <script src="enigmas/riddle.js"></script>   <!-- type: 'riddle'   -->
+  <script src="enigmas/prenom.js"></script>   <!-- type: 'prenom'   -->
+  <script src="enigmas/puzzle.js"></script>   <!-- type: 'puzzle'   -->
+  <script src="enigmas/hangman.js"></script>  <!-- type: 'hangman'  -->
+  <!-- Ajoutez d'autres mini-jeux ici : <script src="enigmas/memory.js"></script> -->
+  <script src="enigma-config.js"></script>    <!-- GENDER + ENIGMA_CONFIG -->
+  <script src="script.js"></script>           <!-- Orchestrateur principal -->
+
+</body>
+</html>

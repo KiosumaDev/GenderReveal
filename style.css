@@ -1,0 +1,696 @@
+/* ═══════════════════════════════════════════════════════
+   GENDER REVEAL — Palette Forêt & Or
+   #D7A450  or/ambre   — accents, titres, boutons
+   #8C5E26  brun       — bordures, éléments secondaires
+   #124019  vert forêt — cartes, surfaces
+   #042610  vert nuit  — fond principal
+   ═══════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700;800&display=swap');
+
+/* ── Variables ─────────────────────────────────────────── */
+:root {
+  --gold:       #D7A450;
+  --gold-light: #f0c878;
+  --brown:      #8C5E26;
+  --green:      #124019;
+  --night:      #042610;
+  --text:       #f0d8a8;
+  --text-muted: rgba(240, 216, 168, 0.85);
+  --text-soft:  #e8c49a;
+  --card-bg:    #0d3318;
+  --card-border:rgba(215, 164, 80, 0.28);
+  /* Variables d'accent par énigme (surchargées par JS à chaque chargement) */
+  --e-accent: var(--gold);
+  --e-p1:     var(--gold);
+  --e-p2:     var(--brown);
+  --e-border: var(--card-border);
+  --e-glow:   rgba(215, 164, 80, 0.33);
+}
+
+/* ── Reset & Base ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--night);
+  color: var(--text);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Canvas étoiles global (derrière tous les écrans) ──── */
+#stars-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Screens ───────────────────────────────────────────── */
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  overflow-y: auto;
+}
+.screen.active { opacity: 1; pointer-events: all; }
+
+/* ── Screen Welcome ────────────────────────────────────── */
+#screen-welcome {
+  /* Fond semi-transparent → les étoiles restent visibles */
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(18,64,25,0.75) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(140,94,38,0.22) 0%, transparent 55%);
+}
+.welcome-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 560px;
+}
+.title-sparkle {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  color: var(--brown);
+  letter-spacing: 0.14em;
+  margin-bottom: 10px;
+  animation: fadeInDown 0.7s ease both;
+}
+.title-main {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.8rem, 8vw, 5rem);
+  color: var(--gold);
+  line-height: 1.15;
+  margin-bottom: 22px;
+  text-shadow: 0 0 40px rgba(215, 164, 80, 0.35);
+  animation: fadeInDown 0.7s ease 0.15s both;
+}
+.subtitle {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.75;
+  margin-bottom: 44px;
+  animation: fadeInDown 0.7s ease 0.3s both;
+}
+
+/* ── Screen Riddle ─────────────────────────────────────── */
+#screen-riddle {
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(18,64,25,0.72) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(140,94,38,0.2) 0%, transparent 55%),
+    linear-gradient(rgba(4,38,16,0.62), rgba(4,38,16,0));
+  justify-content: flex-start;
+  padding-top: 32px;
+}
+.riddle-wrapper {
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 32px;
+}
+.riddle-header { width: 100%; }
+.progress-text {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--e-accent);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  transition: color 0.5s ease;
+}
+.progress-bar {
+  height: 5px;
+  background: rgba(140, 94, 38, 0.3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--e-p2), var(--e-p1));
+  border-radius: 3px;
+  transition: width 0.6s ease, background 0.5s ease, box-shadow 0.5s ease;
+  width: 0%;
+  box-shadow: 0 0 8px var(--e-glow);
+}
+
+/* ── Letter Slots ──────────────────────────────────────── */
+.letter-slots {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.letter-slot {
+  width: 52px;
+  height: 52px;
+  border: 2px dashed var(--brown);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: transparent;
+  background: rgba(4, 38, 16, 0.7);
+  transition: all 0.4s ease;
+  user-select: none;
+}
+.letter-slot.revealed {
+  color: var(--e-accent);
+  background: linear-gradient(135deg, var(--green), #0d3318);
+  border: 2px solid var(--e-accent);
+  box-shadow: 0 0 14px var(--e-glow), inset 0 0 12px var(--e-glow);
+  animation: slotReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transition: color 0.4s, border-color 0.4s, box-shadow 0.4s;
+}
+.letter-slot.shimmer {
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+/* ── Enigma Container ──────────────────────────────────── */
+.enigma-container {
+  width: 100%;
+  animation: fadeInUp 0.45s ease forwards;
+}
+
+/* ── Feedback ──────────────────────────────────────────── */
+.feedback {
+  width: 100%;
+  padding: 13px 20px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+}
+.feedback.success {
+  background: rgba(18, 64, 25, 0.8);
+  color: var(--gold);
+  border: 1px solid rgba(215, 164, 80, 0.4);
+}
+.feedback.hidden { display: none; }
+.hidden { display: none; }
+
+/* ── Riddle Card ───────────────────────────────────────── */
+.riddle-card {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 8px 40px rgba(4, 38, 16, 0.6);
+  text-align: center;
+  border: 1px solid var(--e-border);
+  transition: border-color 0.5s, box-shadow 0.5s;
+}
+.riddle-card.success {
+  border-color: var(--e-accent);
+  box-shadow: 0 8px 40px rgba(4, 38, 16, 0.6), 0 0 24px var(--e-glow);
+}
+.riddle-emoji {
+  font-size: 3rem;
+  margin-bottom: 14px;
+  display: block;
+  animation: float 3.5s ease-in-out infinite;
+}
+.riddle-question {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 26px;
+}
+.riddle-input-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.riddle-input {
+  flex: 1;
+  min-width: 180px;
+  padding: 12px 18px;
+  border: 1px solid var(--brown);
+  border-radius: 14px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  color: var(--text);
+  background: rgba(4, 38, 16, 0.7);
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.riddle-input::placeholder { color: rgba(215, 164, 80, 0.4); }
+.riddle-input:focus {
+  border-color: var(--e-accent);
+  box-shadow: 0 0 0 3px var(--e-glow);
+}
+.riddle-input.shake { animation: shake 0.45s ease; }
+.btn-hint {
+  margin-top: 14px;
+  display: inline-block;
+  background: none;
+  border: 1px dashed rgba(232, 196, 154, 0.45);
+  border-radius: 10px;
+  padding: 6px 14px;
+  color: var(--text-soft);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-hint:hover { background: rgba(232, 196, 154, 0.12); color: var(--gold); }
+.riddle-hint {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  font-style: italic;
+  padding: 10px 16px;
+  background: rgba(232, 196, 154, 0.08);
+  border-radius: 10px;
+  border-left: 3px solid rgba(232, 196, 154, 0.4);
+}
+
+/* ── Prenom Game ───────────────────────────────────────── */
+.prenom-game {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 8px 40px rgba(4, 38, 16, 0.6);
+  border: 1px solid var(--e-border);
+  transition: border-color 0.5s;
+}
+.prenom-header { text-align: center; margin-bottom: 22px; }
+.prenom-emoji { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+.prenom-clue {
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  font-style: italic;
+}
+.prenom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.prenom-tile {
+  padding: 13px 8px;
+  background: rgba(4, 38, 16, 0.6);
+  border: 1px solid var(--brown);
+  border-radius: 14px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+.prenom-tile:hover:not(:disabled) {
+  background: rgba(18, 64, 25, 0.8);
+  border-color: var(--e-accent);
+  color: var(--e-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px var(--e-glow);
+}
+.prenom-tile.wrong {
+  background: rgba(80, 20, 20, 0.5);
+  border-color: rgba(200, 60, 60, 0.5);
+  color: #e08080;
+  animation: shake 0.4s ease;
+}
+.prenom-tile.correct {
+  background: linear-gradient(135deg, rgba(18,64,25,0.9), rgba(13,51,24,0.9));
+  border-color: var(--e-accent);
+  color: var(--e-accent);
+  box-shadow: 0 0 14px var(--e-glow);
+  animation: slotReveal 0.5s ease forwards;
+}
+.prenom-tile.faded { opacity: 0.2; pointer-events: none; }
+.prenom-tile.eliminated {
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.prenom-attempts {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  text-align: center;
+  min-height: 20px;
+  font-style: italic;
+}
+
+/* ── Screen Final ──────────────────────────────────────── */
+#screen-final {
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(18,64,25,0.72) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(140,94,38,0.2) 0%, transparent 55%),
+    linear-gradient(rgba(4,38,16,0.62), rgba(4,38,16,0.62));
+}
+.final-content { text-align: center; max-width: 600px; }
+.final-label {
+  font-size: 0.82rem;
+  color: var(--brown);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.final-content h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.3rem, 4vw, 1.9rem);
+  color: var(--gold);
+  margin: 26px 0 10px;
+}
+.final-content p { color: var(--text-muted); font-size: 1rem; margin-bottom: 36px; }
+
+/* ── Screen Reveal ─────────────────────────────────────── */
+#screen-reveal {
+  transition: background 1.2s ease, opacity 0.5s ease;
+}
+#confetti-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.reveal-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reveal-character {
+  max-width: min(420px, 80vw);
+  max-height: 75vh;
+  object-fit: contain;
+  border-radius: 28px;
+  box-shadow:
+    0 24px 80px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255,255,255,0.08);
+  opacity: 0;
+  transform: scale(0.75) translateY(24px);
+  transition:
+    opacity 0.9s cubic-bezier(0.34, 1.3, 0.64, 1),
+    transform 0.9s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.reveal-character.animate-in {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* ── Buttons ───────────────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold), var(--brown));
+  color: var(--night);
+  border: none;
+  padding: 14px 36px;
+  border-radius: 50px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 20px rgba(215, 164, 80, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 28px rgba(215, 164, 80, 0.55);
+}
+.btn-primary:active { transform: translateY(0); }
+.btn-primary.btn-large { font-size: 1.2rem; padding: 18px 52px; }
+.btn-primary.hidden { display: none; }
+
+.btn-secondary {
+  background: rgba(255,255,255,0.18);
+  color: white;
+  border: 2px solid rgba(255,255,255,0.55);
+  padding: 12px 30px;
+  border-radius: 50px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 28px;
+  backdrop-filter: blur(4px);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.28); }
+
+/* ── Animations ────────────────────────────────────────── */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slotReveal {
+  0%   { transform: scale(0) rotate(-180deg); opacity: 0; }
+  60%  { transform: scale(1.2) rotate(8deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes shimmer {
+  0%,100% {
+    box-shadow: 0 0 14px rgba(215,164,80,0.4), inset 0 0 12px rgba(215,164,80,0.08);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(215,164,80,0.7), inset 0 0 20px rgba(215,164,80,0.15);
+    background: linear-gradient(135deg, #1a5025, #0f3d1c);
+  }
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-8px); }
+  40%     { transform: translateX(8px); }
+  60%     { transform: translateX(-5px); }
+  80%     { transform: translateX(5px); }
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-9px); }
+}
+@keyframes bounce {
+  0%,100% { transform: translateY(0) scale(1); }
+  35%     { transform: translateY(-16px) scale(1.06); }
+  65%     { transform: translateY(-4px) scale(0.97); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PUZZLE
+   ══════════════════════════════════════════════════════════ */
+.puzzle-game {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 28px 24px;
+  box-shadow: 0 8px 40px rgba(4, 38, 16, 0.6);
+  border: 1px solid var(--e-border);
+  transition: border-color 0.5s;
+}
+.puzzle-header { text-align: center; margin-bottom: 20px; }
+.puzzle-emoji  { font-size: 2.2rem; display: block; margin-bottom: 8px; }
+.puzzle-clue   { font-size: 1rem; color: var(--text-muted); font-style: italic; line-height: 1.6; }
+.puzzle-grid {
+  display: grid;
+  gap: 3px;
+  margin: 0 auto 16px;
+  border: 2px solid var(--brown);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.puzzle-piece {
+  cursor: pointer;
+  transition: filter 0.2s, box-shadow 0.2s, outline 0.15s;
+  outline: 0px solid transparent;
+  user-select: none;
+}
+.puzzle-piece:hover { filter: brightness(1.12); }
+.puzzle-piece.selected {
+  outline: 3px solid var(--e-accent);
+  filter: brightness(1.2);
+  z-index: 2;
+  position: relative;
+}
+.puzzle-piece.correct {
+  outline: 2px solid var(--e-accent);
+  cursor: default;
+  opacity: 0.9;
+}
+/* Image intacte une fois le puzzle résolu */
+.puzzle-grid.solved {
+  gap: 0;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: gap 0.3s ease;
+}
+.puzzle-grid.solved .puzzle-piece {
+  outline: none;
+  cursor: default;
+  opacity: 1;
+}
+.puzzle-hint {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  text-align: center;
+  font-style: italic;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PENDU (HANGMAN)
+   ══════════════════════════════════════════════════════════ */
+.hangman-game {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 28px 22px;
+  box-shadow: 0 8px 40px rgba(4, 38, 16, 0.6);
+  border: 1px solid var(--e-border);
+  transition: border-color 0.5s;
+}
+.hangman-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.hangman-emoji   { font-size: 2rem; flex-shrink: 0; }
+.hangman-progress {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--e-accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.5s;
+}
+
+/* Mot à deviner */
+.hangman-word-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 18px;
+  min-height: 56px;
+  align-items: flex-end;
+}
+.hm-letter {
+  width: 34px;
+  height: 44px;
+  border-bottom: 2px solid var(--brown);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: transparent;
+  transition: color 0.3s, border-color 0.3s;
+}
+.hm-letter.hm-revealed {
+  color: var(--e-accent);
+  border-color: var(--e-accent);
+}
+.hm-space {
+  width: 18px;
+  display: inline-block;
+}
+
+/* Cases d'erreurs */
+.hangman-errors {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.hm-err-box {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid var(--brown);
+  background: rgba(4, 38, 16, 0.5);
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.hm-err-box.hm-err-red {
+  background: rgba(180, 40, 40, 0.7);
+  border-color: rgba(220, 80, 80, 0.6);
+  box-shadow: 0 0 6px rgba(220, 80, 80, 0.4);
+}
+
+/* Message résultat */
+.hangman-msg {
+  min-height: 24px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.hm-success { color: var(--e-accent); }
+.hm-fail    { color: #e08080; }
+
+.hm-hint-wrap {
+  text-align: center;
+  margin-top: 14px;
+}
+
+/* Clavier */
+.hangman-keyboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+.hm-key {
+  width: 36px;
+  height: 36px;
+  background: rgba(4, 38, 16, 0.7);
+  border: 1px solid var(--brown);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.hm-key:hover:not(:disabled) {
+  background: rgba(18, 64, 25, 0.9);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.hm-key:disabled { opacity: 0.35; cursor: default; }
+.hm-key.hm-ok {
+  background: rgba(18, 64, 25, 0.9);
+  border-color: var(--e-accent);
+  color: var(--e-accent);
+  opacity: 0.7;
+}
+.hm-key.hm-wrong {
+  background: rgba(100, 20, 20, 0.6);
+  border-color: rgba(200, 60, 60, 0.5);
+  color: #e08080;
+  opacity: 0.6;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .prenom-grid { grid-template-columns: repeat(2, 1fr); }
+  .letter-slot { width: 44px; height: 44px; font-size: 1.3rem; }
+  .riddle-input-group { flex-direction: column; align-items: stretch; }
+  .riddle-card, .prenom-game, .puzzle-game, .hangman-game { padding: 20px 16px; }
+  .hm-key { width: 32px; height: 32px; font-size: 0.78rem; }
+  .hm-letter { width: 28px; font-size: 1.1rem; }
+}
