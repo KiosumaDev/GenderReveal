@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => App.init());
    DEBUG — touche  ²  (le carré à gauche du 1) pour valider l'énigme en cours
    Pour désactiver : commenter le bloc ci-dessous
    ═══════════════════════════════════════════════════════════════ */
-// document.addEventListener('keydown', e => {
-//   if (e.key === '²' && App.currentEnigma) App.currentEnigma.solve();
-// });
+ document.addEventListener('keydown', e => {
+   if (e.key === '²' && App.currentEnigma) App.currentEnigma.solve();
+ });
 /* ─── fin DEBUG ─────────────────────────────────────────────── */
