@@ -40,12 +40,31 @@ class PuzzleEnigma extends BaseEnigma {
   /* ─── Construction de la grille ───────────────────────── */
   _build(container, imgSrc) {
     const { _cols: cols, _rows: rows } = this;
-    const total  = cols * rows;
-    const maxPx  = Math.min(360, window.innerWidth - 72);
-    this._pieceW = Math.floor(maxPx / cols);
-    this._pieceH = Math.floor(maxPx / rows);
-    const gW     = this._pieceW * cols;
-    const gH     = this._pieceH * rows;
+    const total = cols * rows;
+    const gap   = 3;
+
+    /* Insérer le shell d'abord pour mesurer la largeur réelle disponible */
+    container.innerHTML = `
+      <div class="puzzle-game">
+        <div class="puzzle-header">
+          <span class="puzzle-emoji">${this.config.emoji || '🧩'}</span>
+          <p class="puzzle-clue">${this.config.clue || 'Remettez les pièces dans le bon ordre.'}</p>
+        </div>
+        <div class="puzzle-grid" id="puzzle-grid"></div>
+        <p class="puzzle-hint">Cliquez sur une pièce pour la sélectionner, puis une autre pour les échanger.</p>
+      </div>
+    `;
+
+    const grid      = container.querySelector('#puzzle-grid');
+    const availableW = Math.min(360, grid.clientWidth || (window.innerWidth - 72));
+
+    this._pieceW = Math.floor((availableW - gap * (cols - 1)) / cols);
+    this._pieceH = Math.floor((availableW - gap * (rows - 1)) / rows);
+    const gW     = this._pieceW * cols + gap * (cols - 1);
+    const gH     = this._pieceH * rows + gap * (rows - 1);
+
+    grid.style.gridTemplateColumns = `repeat(${cols}, ${this._pieceW}px)`;
+    grid.style.width               = `${gW}px`;
 
     /* Mélanger (Fisher-Yates) — garantit un état non-résolu */
     const order = Array.from({ length: total }, (_, i) => i);
@@ -55,21 +74,6 @@ class PuzzleEnigma extends BaseEnigma {
         [order[i], order[j]] = [order[j], order[i]];
       }
     } while (order.every((v, i) => v === i));
-
-    container.innerHTML = `
-      <div class="puzzle-game">
-        <div class="puzzle-header">
-          <span class="puzzle-emoji">${this.config.emoji || '🧩'}</span>
-          <p class="puzzle-clue">${this.config.clue || 'Remettez les pièces dans le bon ordre.'}</p>
-        </div>
-        <div class="puzzle-grid" id="puzzle-grid"
-             style="grid-template-columns:repeat(${cols},${this._pieceW}px); width:${gW}px;">
-        </div>
-        <p class="puzzle-hint">Cliquez sur une pièce pour la sélectionner, puis une autre pour les échanger.</p>
-      </div>
-    `;
-
-    const grid = container.querySelector('#puzzle-grid');
 
     /* Chaque cellule a une position fixe dans la grille (gridIdx)
        et affiche visuellement la pièce d'index originalIdx. */
