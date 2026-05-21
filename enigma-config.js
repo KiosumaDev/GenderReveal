@@ -9,7 +9,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 // ← MODIFIEZ ICI : 'girl' pour fille, 'boy' pour garçon
-const GENDER = 'boy';
+const GENDER = 'girl';
 
 /* ════════════════════════════════════════════════════════
    RÉVÉLATION FINALE — image + palette selon le sexe
