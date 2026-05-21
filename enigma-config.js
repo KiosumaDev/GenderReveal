@@ -81,7 +81,7 @@ alors vous trouverez mon nom.`,
     type: 'hangman',
     letter: '1',
     emoji: '🕵️',
-    maxErrors: 5,
+    maxErrors: 8,
     words: [
       'Souane',
       'Black & Yuumi',
